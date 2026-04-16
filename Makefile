@@ -1,7 +1,7 @@
 .PHONY: help
 .PHONY: create-starter-site-pr overwrite-starter-site
 .PHONY: build pull down down-% logs-% up up-%
-.PHONY: clean demo-objects drush init ping status
+.PHONY: benchmark-islandora-events clean demo-objects drush init ping status
 .PHONY: traefik-http traefik-https-letsencrypt traefik-https-mkcert
 .PHONY: sequelace
 .SILENT:
@@ -14,7 +14,15 @@ DEFAULT_HTTPS=443
 
 ifeq (drush,$(firstword $(MAKECMDGOALS)))
 DRUSH_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
-$(foreach arg,$(DRUSH_ARGS),$(eval $(arg):;@:))
+endif
+
+ifeq (benchmark-islandora-events,$(firstword $(MAKECMDGOALS)))
+BENCHMARK_ISLANDORA_EVENTS_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+endif
+
+ifneq ($(filter drush benchmark-islandora-events,$(firstword $(MAKECMDGOALS))),)
+.DEFAULT:
+	@:
 endif
 
 help: ## Show this help message
@@ -67,6 +75,9 @@ ping:  ## Ensure site is available.
 
 drush: ## Run drush in the drupal container; for drush flags use: make -- drush status -y
 	docker compose exec -it drupal drush $(DRUSH_ARGS)
+
+benchmark-islandora-events: ## Run the Islandora Events benchmark harness; use: make -- benchmark-islandora-events --url URL --ingest-script PATH
+	./scripts/benchmark-islandora-events.sh $(BENCHMARK_ISLANDORA_EVENTS_ARGS)
 
 demo-objects: up ## Add demo objects from https://github.com/Islandora-Devops/islandora_demo_objects
 	./scripts/demo-objects.sh

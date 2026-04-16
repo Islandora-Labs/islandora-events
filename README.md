@@ -32,8 +32,8 @@ Notable changes to this copy of ISLE Site Template:
 
 - Community Feedback
 - Testing
-- Stress Testing
-    - Tooling/guidance on swapping database transport with activemq
+- [Stress Testing](#benchmarking-islandora-events)
+- Tooling/guidance on swapping database transport with activemq
 - PRs for `islandora_events` can go on this repo
 - PRs for the new monolith drupal container can go onto https://github.com/Islandora-Devops/isle-buildkit/pull/560 // the ISLE Buildkit branch `php-pecl-amp`
 - PRs for `sm_workers` and `sm_ledger` are welcome but these don't necessarily need to be taken on by the Islandora Community. If there is a desire, we can move those over, too. But those were written so other Drupal projects could build off them if they desire (and that's what `islandora_events` does)
@@ -83,3 +83,20 @@ A hack to avoid Islandora from emitting to ActiveMQ (which is not being shipped 
                 "events": "assets/patches/drupal/islandora/1100.patch"
             },
 ```
+
+## Benchmarking Islandora Events
+
+This repository includes a benchmark harness at [./scripts/benchmark-islandora-events.sh](./scripts/benchmark-islandora-events.sh). It wraps an existing ingest script so you can measure ingest duration, queue drain time, homepage latency, host load, and Docker stats during a run.
+
+Run it with the make helper:
+
+```bash
+make -- benchmark-islandora-events \
+  --url http://islandora.local/ \
+  --ingest-script ./scripts/run-workbench-ingest.sh \
+  --label sql-local \
+  --output-dir ./benchmark-results/sql-local
+```
+
+The harness writes `summary.md` plus raw TSV sample files into the selected output directory.
+
