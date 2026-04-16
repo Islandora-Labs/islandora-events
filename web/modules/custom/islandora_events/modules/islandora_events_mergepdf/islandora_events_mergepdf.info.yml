@@ -1,0 +1,10 @@
+name: "Islandora Events Merge PDF"
+type: module
+description: "Merge PDF integration for Islandora Events"
+package: Islandora
+core_version_requirement: ^10 || ^11
+dependencies:
+  - islandora_events
+  - sm_workers
+  - sm_scheduler
+configure: islandora_events.admin_settings

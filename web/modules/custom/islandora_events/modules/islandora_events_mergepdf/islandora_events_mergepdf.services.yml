@@ -1,0 +1,31 @@
+services:
+  logger.channel.islandora_events_mergepdf:
+    parent: logger.channel_base
+    arguments: ["islandora_events_mergepdf"]
+
+  islandora_events_mergepdf.worker_definitions:
+    class: Drupal\islandora_events_mergepdf\Worker\MergePdfWorkerDefinitions
+    tags:
+      - { name: sm_workers.definition_provider }
+
+  islandora_events_mergepdf.media_subscriber:
+    class: Drupal\islandora_events_mergepdf\EventSubscriber\MergePdfSubscriber
+    arguments: ["@logger.channel.islandora_events_mergepdf", "@islandora_events_mergepdf.pending_store"]
+    tags:
+      - { name: hook_subscriber }
+
+  islandora_events_mergepdf.pending_store:
+    class: Drupal\islandora_events_mergepdf\Service\MergePdfPendingStore
+    arguments: ["@state"]
+
+  islandora_events_mergepdf.message_handler:
+    class: Drupal\islandora_events_mergepdf\MessageHandler\MergePdfHandler
+    arguments: ["@entity_type.manager", "@logger.channel.islandora_events_mergepdf", "@islandora_events_mergepdf.pending_store"]
+    tags:
+      - { name: messenger.message_handler }
+
+  islandora_events_mergepdf.sweep_handler:
+    class: Drupal\islandora_events_mergepdf\MessageHandler\SweepPendingMergePdfHandler
+    arguments: ["@islandora_events_mergepdf.pending_store", "@messenger.default_bus", "@logger.channel.islandora_events_mergepdf"]
+    tags:
+      - { name: messenger.message_handler }

@@ -1,0 +1,8 @@
+{
+  "name": "drupal/islandora_events_mergepdf",
+  "description": "Optional mergepdf reconciliation for Islandora Events",
+  "type": "drupal-module",
+  "require": {
+    "drupal/sm_scheduler": "^1.0"
+  }
+}

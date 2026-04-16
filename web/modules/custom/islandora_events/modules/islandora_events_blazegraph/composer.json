@@ -1,0 +1,10 @@
+{
+  "name": "drupal/islandora_events_blazegraph",
+  "description": "Blazegraph/triplestore indexing target for Islandora Events with embedded SPARQL update logic.",
+  "type": "drupal-module",
+  "require": {
+    "drupal/islandora_events": "*",
+    "easyrdf/easyrdf": "^1.1"
+  }
+}
+

@@ -1,0 +1,6 @@
+_core:
+  default_config_hash: GEehiJ6z2FhZZNx5BztLxy8ZnftNu172wXOMvgRjSsE
+enabled: true
+endpoint: 'http://blazegraph:8080/bigdata/namespace/islandora/sparql'
+timeout: 30
+named_graph: ''

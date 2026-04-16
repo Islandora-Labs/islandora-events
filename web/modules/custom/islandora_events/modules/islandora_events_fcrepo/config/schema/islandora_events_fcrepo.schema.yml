@@ -1,0 +1,13 @@
+islandora_events_fcrepo.settings:
+  type: config_object
+  label: 'Islandora Events fcrepo settings'
+  mapping:
+    enabled:
+      type: boolean
+      label: 'Enabled'
+    endpoint:
+      type: string
+      label: 'Endpoint URL'
+    timeout:
+      type: integer
+      label: 'Timeout'

@@ -1,0 +1,11 @@
+islandora_events.node_events_tab:
+  route_name: view.event_log.page_1
+  title: 'Logs'
+  base_route: entity.node.canonical
+  weight: 30
+
+islandora_events.media_events_tab:
+  route_name: view.event_log.page_2
+  title: 'Logs'
+  base_route: entity.media.canonical
+  weight: 30

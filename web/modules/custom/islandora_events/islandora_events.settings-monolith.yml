@@ -1,0 +1,35 @@
+index_targets:
+  fedora:
+    enabled: true
+    endpoint: 'http://fcrepo:8080/fcrepo/rest'
+    timeout: 30
+  blazegraph:
+    enabled: true
+    endpoint: 'http://blazegraph:8080/bigdata/namespace/islandora/sparql'
+    timeout: 30
+
+derivative_runners:
+  islandora-connector-fits:
+    execution_mode: command
+    config_path: '/opt/scyllaridae/crayfits/scyllaridae.yml'
+    timeout: 300
+  islandora-connector-homarus:
+    execution_mode: command
+    config_path: '/opt/scyllaridae/homarus/scyllaridae.yml'
+    timeout: 300
+  islandora-connector-houdini:
+    execution_mode: command
+    config_path: '/opt/scyllaridae/houdini/scyllaridae.yml'
+    timeout: 300
+  islandora-connector-ocr:
+    execution_mode: command
+    config_path: '/opt/scyllaridae/hypercube/scyllaridae.yml'
+    timeout: 300
+  islandora-connector-transkribus:
+    execution_mode: http
+    endpoint: 'http://transkribus:5000/'
+    timeout: 300
+  islandora-connector-mergepdf:
+    execution_mode: command
+    config_path: '/opt/scyllaridae/mergepdf/scyllaridae.yml'
+    timeout: 300

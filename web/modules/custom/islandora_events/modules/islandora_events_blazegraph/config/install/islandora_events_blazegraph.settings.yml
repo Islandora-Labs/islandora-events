@@ -1,0 +1,4 @@
+enabled: true
+endpoint: 'http://blazegraph:8080/bigdata/namespace/islandora/sparql'
+timeout: 30
+named_graph: ''

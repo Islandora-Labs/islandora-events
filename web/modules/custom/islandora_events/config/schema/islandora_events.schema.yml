@@ -1,0 +1,77 @@
+islandora_events.settings:
+  type: config_object
+  label: 'Islandora Events settings'
+  mapping: {  }
+
+islandora_events.derivative_runners:
+  type: config_object
+  label: 'Islandora Events derivative runners'
+  mapping:
+    runners:
+      type: mapping
+      label: 'Derivative runners'
+      mapping:
+        '*':
+          type: islandora_events.derivative_runner
+          label: 'Derivative runner'
+islandora_events.derivative_runner:
+  type: mapping
+  label: 'Derivative runner definition'
+  mapping:
+    execution_mode:
+      type: string
+      label: 'Execution mode'
+    endpoint:
+      type: string
+      label: 'Endpoint URL'
+    command:
+      type: string
+      label: 'Command template'
+    cmd:
+      type: string
+      label: 'Command binary'
+    args:
+      type: sequence
+      label: 'Command arguments'
+      sequence:
+        type: string
+    env_vars:
+      type: sequence
+      label: 'Allowed environment variables'
+      sequence:
+        type: string
+    config_path:
+      type: string
+      label: 'Config path'
+    forward_auth:
+      type: boolean
+      label: 'Forward authorization'
+    working_directory:
+      type: string
+      label: 'Working directory'
+    timeout:
+      type: integer
+      label: 'Timeout'
+    heartbeat_interval:
+      type: integer
+      label: 'Heartbeat interval'
+    write_back:
+      type: boolean
+      label: 'Write derivative back to Drupal'
+
+islandora_events.index_target:
+  type: mapping
+  label: 'Index target settings'
+  mapping:
+    enabled:
+      type: boolean
+      label: 'Enabled'
+    endpoint:
+      type: string
+      label: 'Endpoint URL'
+    timeout:
+      type: integer
+      label: 'Timeout'
+    named_graph:
+      type: string
+      label: 'Named graph'

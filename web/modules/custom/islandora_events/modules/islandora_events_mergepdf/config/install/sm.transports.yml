@@ -1,0 +1,5 @@
+transports:
+  islandora_mergepdf:
+    dsn: drupal-sql://default?queue_name=islandora_mergepdf
+    options:
+      redeliver_timeout: 14400

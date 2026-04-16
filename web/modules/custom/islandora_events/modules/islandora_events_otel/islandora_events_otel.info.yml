@@ -1,0 +1,9 @@
+name: "Islandora Events OTEL"
+type: module
+description: "Optional OpenTelemetry-style trace context enrichment for Islandora Events ledger records."
+package: Islandora
+core_version_requirement: ^10 || ^11
+dependencies:
+  - drupal:islandora_events
+  - drupal:sm_ledger
+

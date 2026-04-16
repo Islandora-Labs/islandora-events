@@ -1,0 +1,8 @@
+name: "Islandora Events Blazegraph"
+type: module
+description: "Direct Blazegraph/triplestore indexing target for Islandora Events using embedded SPARQL update logic."
+package: Islandora
+core_version_requirement: ^10 || ^11
+dependencies:
+  - drupal:islandora_events
+

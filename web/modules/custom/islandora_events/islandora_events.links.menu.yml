@@ -1,0 +1,6 @@
+islandora_events.admin_settings:
+  title: 'Islandora Events Settings'
+  description: 'Configure indexing targets and event processing options.'
+  route_name: islandora_events.admin_settings
+  parent: system.admin_config_services
+  weight: 99

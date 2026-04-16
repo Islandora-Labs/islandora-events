@@ -1,0 +1,10 @@
+name: "Islandora Events Backfill"
+type: module
+description: "Optional derivative backfill scanning for Islandora Events"
+package: Islandora
+core_version_requirement: ^10 || ^11
+dependencies:
+  - drupal:islandora_events
+  - drupal:sm
+  - drupal:sm_workers
+  - drupal:sm_scheduler

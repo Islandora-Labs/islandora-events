@@ -1,0 +1,5 @@
+administer islandora events:
+  title: 'Administer Islandora Events'
+  description: 'View and manage Islandora event tracking records and configuration.'
+  restrict access: true
+

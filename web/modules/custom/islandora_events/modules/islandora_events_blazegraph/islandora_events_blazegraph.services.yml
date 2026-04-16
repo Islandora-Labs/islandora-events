@@ -1,0 +1,36 @@
+services:
+  logger.channel.islandora_events_blazegraph:
+    parent: logger.channel_base
+    arguments: ["islandora_events_blazegraph"]
+
+  islandora_events_blazegraph.indexer:
+    class: Drupal\islandora_events_blazegraph\Service\BlazegraphIndexerService
+    arguments:
+      - "@http_client"
+      - "@logger.channel.islandora_events_blazegraph"
+  Drupal\islandora_events_blazegraph\Service\BlazegraphIndexerService: "@islandora_events_blazegraph.indexer"
+
+  islandora_events_blazegraph.index_target:
+    class: Drupal\islandora_events_blazegraph\Index\Target\BlazegraphIndexTarget
+    arguments:
+      - "@config.factory"
+      - "@jwt.authentication.jwt"
+      - "@sm_workers.circuit_breaker"
+      - "@islandora_events_blazegraph.indexer"
+      - "@current_user"
+    tags:
+      - { name: islandora_events.index_target }
+
+  islandora_events_blazegraph.payload_metadata:
+    class: Drupal\islandora_events_blazegraph\Index\BlazegraphIndexPayloadMetadataProvider
+    tags:
+      - { name: islandora_events.index_payload_metadata }
+
+  islandora_events_blazegraph.commands:
+    class: Drupal\islandora_events_blazegraph\Commands\IslandoraEventsBlazegraphCommands
+    arguments:
+      - "@entity_type.manager"
+      - "@islandora_events_blazegraph.index_target"
+      - "@logger.channel.islandora_events_blazegraph"
+    tags:
+      - { name: drush.command }

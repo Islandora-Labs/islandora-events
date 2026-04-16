@@ -1,0 +1,31 @@
+islandora_events.admin_settings:
+  path: '/admin/config/services/islandora-events/settings'
+  defaults:
+    _form: '\Drupal\islandora_events\Form\IslandoraEventsSettingsForm'
+    _title: 'Islandora Events Settings'
+  requirements:
+    _permission: 'administer islandora events'
+
+islandora_events.event_record_requeue:
+  path: '/admin/config/islandora/events/{event_record}/requeue'
+  defaults:
+    _form: '\Drupal\islandora_events\Form\EventRecordRequeueConfirmForm'
+    _title: 'Requeue Event Record'
+  requirements:
+    _permission: 'administer islandora events'
+  options:
+    parameters:
+      event_record:
+        type: entity:event_record
+
+islandora_events.event_record_run_now:
+  path: '/admin/config/islandora/events/{event_record}/run-now'
+  defaults:
+    _form: '\Drupal\islandora_events\Form\EventRecordRunNowConfirmForm'
+    _title: 'Run Event Record Now'
+  requirements:
+    _permission: 'administer islandora events'
+  options:
+    parameters:
+      event_record:
+        type: entity:event_record

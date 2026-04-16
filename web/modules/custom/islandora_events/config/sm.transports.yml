@@ -1,0 +1,20 @@
+transports:
+  islandora_derivatives:
+    dsn: drupal-sql://default?queue_name=islandora_derivatives
+    options:
+      redeliver_timeout: 14400
+  islandora_index_fedora:
+    dsn: drupal-sql://default?queue_name=islandora_index_fedora
+    options:
+      redeliver_timeout: 14400
+  islandora_index_blazegraph:
+    dsn: drupal-sql://default?queue_name=islandora_index_blazegraph
+    options:
+      redeliver_timeout: 14400
+  islandora_index_custom:
+    dsn: drupal-sql://default?queue_name=islandora_index_custom
+    options:
+      redeliver_timeout: 14400
+  failed:
+    dsn: drupal-sql://default?queue_name=islandora_events_failed
+    options: {  }

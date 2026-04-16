@@ -1,0 +1,22 @@
+services:
+  messenger.middleware.islandora_events_otel.trace_context:
+    class: Drupal\islandora_events_otel\Messenger\Middleware\TraceContextMiddleware
+    arguments: ["@islandora_events_otel.trace_context"]
+    public: true
+    abstract: true
+
+  islandora_events_otel.trace_context:
+    class: Drupal\islandora_events_otel\Service\TraceContextService
+    arguments: ["@request_stack"]
+  Drupal\islandora_events_otel\Service\TraceContextService: '@islandora_events_otel.trace_context'
+
+  islandora_events_otel.ledger_telemetry:
+    class: Drupal\islandora_events_otel\Service\LedgerTelemetryService
+    arguments: ["@entity_type.manager", "@datetime.time", "@islandora_events_otel.trace_context"]
+  Drupal\islandora_events_otel\Service\LedgerTelemetryService: '@islandora_events_otel.ledger_telemetry'
+
+  islandora_events_otel.worker_subscriber:
+    class: Drupal\islandora_events_otel\EventSubscriber\WorkerTelemetrySubscriber
+    arguments: ["@islandora_events_otel.ledger_telemetry"]
+    tags:
+      - { name: event_subscriber }

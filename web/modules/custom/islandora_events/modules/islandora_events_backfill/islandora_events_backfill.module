@@ -1,0 +1,6 @@
+<?php
+
+/**
+ * @file
+ * Hooks for the Islandora Events Backfill module.
+ */

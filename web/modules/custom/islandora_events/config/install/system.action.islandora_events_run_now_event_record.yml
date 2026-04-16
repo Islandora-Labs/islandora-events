@@ -1,0 +1,13 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - islandora_events
+  module:
+    - islandora_events
+id: islandora_events_run_now_event_record
+label: 'Run now'
+type: event_record
+plugin: islandora_events_run_now_event_record
+configuration: {  }

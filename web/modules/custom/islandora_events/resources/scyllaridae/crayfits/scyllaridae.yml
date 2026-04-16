@@ -1,0 +1,12 @@
+allowedMimeTypes:
+  - "*"
+cmdByMimeType:
+  default:
+    cmd: /usr/bin/curl
+    args:
+      - "-X"
+      - "POST"
+      - "-F"
+      - "datafile=@-"
+      - "${SCYLLARIDAE_REMOTE_ENDPOINT}"
+    allowInsecureArgs: ${SCYLLARIDAE_ALLOW_INSECURE_ARGS}

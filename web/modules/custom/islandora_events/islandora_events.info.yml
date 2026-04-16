@@ -1,0 +1,12 @@
+name: "Islandora Events"
+type: module
+description: "Drop-in replacement for the ActiveMQ/Alpaca stack: derivative generation, Fedora and Blazegraph indexing, and durable job ledger via Symfony Messenger."
+package: Islandora
+core_version_requirement: ^10 || ^11
+dependencies:
+  - drupal:action
+  - islandora:islandora
+  - sm:sm
+  - sm_ledger:sm_ledger
+  - sm_workers:sm_workers
+configure: islandora_events.admin_settings

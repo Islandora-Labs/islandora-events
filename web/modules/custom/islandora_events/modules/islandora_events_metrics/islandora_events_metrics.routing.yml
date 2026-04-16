@@ -1,0 +1,6 @@
+islandora_events_metrics.prometheus:
+  path: '/admin/reports/islandora-events/metrics'
+  defaults:
+    _controller: '\Drupal\islandora_events_metrics\Controller\PrometheusMetricsController::metrics'
+  requirements:
+    _permission: 'view islandora events metrics'

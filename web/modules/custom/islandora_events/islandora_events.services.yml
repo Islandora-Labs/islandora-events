@@ -1,0 +1,208 @@
+services:
+  logger.channel.islandora_events:
+    parent: logger.channel_base
+    arguments: ["islandora_events"]
+
+  Drupal\islandora\IslandoraUtils: '@islandora.utils'
+  Drupal\islandora\MediaSource\MediaSourceService: '@islandora.media_source_service'
+
+  islandora_events.deferred_media_file_reaction_queue:
+    class: Drupal\islandora_events\Service\DeferredMediaFileReactionQueue
+    arguments: ["@islandora.utils"]
+  Drupal\islandora_events\Service\DeferredMediaFileReactionQueue: '@islandora_events.deferred_media_file_reaction_queue'
+
+  islandora_events.deferred_media_file_reaction_subscriber:
+    class: Drupal\islandora_events\EventSubscriber\DeferredMediaFileReactionSubscriber
+    arguments: ["@islandora_events.deferred_media_file_reaction_queue"]
+    tags:
+      - { name: event_subscriber }
+
+  islandora_events.derivative_action_data_extractor:
+    class: Drupal\islandora_events\Service\DerivativeActionDataExtractor
+  Drupal\islandora_events\Service\DerivativeActionDataExtractor: '@islandora_events.derivative_action_data_extractor'
+
+  islandora_events.derivative_queue:
+    class: Drupal\islandora_events\Service\DerivativeQueueService
+    arguments:
+      - "@entity_type.manager"
+      - "@current_user"
+      - "@sm_ledger.dispatch"
+      - "@logger.channel.islandora_events"
+      - "@islandora.eventgenerator"
+      - "@event_dispatcher"
+      - "@islandora_events.derivative_action_data_extractor"
+  Drupal\islandora_events\Service\DerivativeQueueService: '@islandora_events.derivative_queue'
+  islandora_events.legacy_derivative_queue: '@islandora_events.derivative_queue'
+
+  islandora_events.derivative_runner:
+    class: Drupal\islandora_events\Service\DerivativeRunnerService
+    arguments:
+      - "@entity_type.manager"
+      - "@sm_ledger.projection"
+      - "@sm_ledger.recovery"
+      - "@logger.channel.islandora_events"
+      - "@account_switcher"
+      - "@jwt.authentication.jwt"
+      - "@islandora_events.derivative_payload_normalizer"
+      - "@islandora_events.derivative_runner_config_resolver"
+      - "@islandora_events.derivative_write_back"
+      - "@sm_workers.execution_manager"
+  Drupal\islandora_events\Service\DerivativeRunnerService: '@islandora_events.derivative_runner'
+
+  islandora_events.index_record_processor:
+    class: Drupal\islandora_events\Service\IndexRecordProcessor
+    arguments:
+      - "@entity_type.manager"
+      - "@islandora_events.index_target_manager"
+      - "@sm_ledger.projection"
+      - "@account_switcher"
+  Drupal\islandora_events\Service\IndexRecordProcessor: '@islandora_events.index_record_processor'
+
+  islandora_events.index_ledger_replay:
+    class: Drupal\islandora_events\Service\IndexLedgerReplayService
+    arguments:
+      - "@entity_type.manager"
+      - "@islandora_events.index_record_processor"
+      - "@logger.channel.islandora_events"
+  Drupal\islandora_events\Service\IndexLedgerReplayService: '@islandora_events.index_ledger_replay'
+
+  islandora_events.derivative_payload_normalizer:
+    class: Drupal\islandora_events\Service\DerivativePayloadNormalizer
+    arguments: ["@logger.channel.islandora_events"]
+
+  islandora_events.derivative_runner_config_resolver:
+    class: Drupal\islandora_events\Service\DerivativeRunnerConfigResolver
+    arguments: ["@config.factory", "@sm_workers.runtime_defaults", "@islandora_events.derivative_runner_defaults_resolver", "@islandora_events.derivative_runner_config_registry"]
+
+  islandora_events.derivative_write_back:
+    class: Drupal\islandora_events\Service\DerivativeWriteBackService
+    arguments: ["@http_client"]
+
+  islandora_events.derivative_command_policy:
+    class: Drupal\islandora_events\Service\SettingsDerivativeCommandPolicy
+  Drupal\islandora_events\Service\DerivativeCommandPolicyInterface: '@islandora_events.derivative_command_policy'
+
+  islandora_events.derivative_runner_defaults.default:
+    class: Drupal\islandora_events\Service\DefaultDerivativeRunnerDefaultsProvider
+    tags:
+      - { name: islandora_events.derivative_runner_defaults }
+
+  islandora_events.derivative_runner_config_provider.default:
+    class: Drupal\islandora_events\Service\BaseDerivativeRunnerConfigProvider
+    tags:
+      - { name: islandora_events.derivative_runner_config_provider }
+
+  islandora_events.derivative_runner_defaults_resolver:
+    class: Drupal\islandora_events\Service\DerivativeRunnerDefaultsResolver
+    arguments:
+      - !tagged_iterator { tag: islandora_events.derivative_runner_defaults }
+
+  islandora_events.derivative_runner_config_registry:
+    class: Drupal\islandora_events\Service\DerivativeRunnerConfigRegistry
+    arguments:
+      - !tagged_iterator { tag: islandora_events.derivative_runner_config_provider }
+
+  islandora_events.circuit_breaker_primer:
+    class: Drupal\islandora_events\Service\IslandoraCircuitBreakerPrimer
+    arguments: ["@config.factory", "@islandora_events.derivative_runner_defaults_resolver", "@islandora_events.derivative_runner_config_registry"]
+    tags:
+      - { name: sm_workers.circuit_breaker_primer }
+
+  islandora_events.event_record_requeue_handler:
+    class: Drupal\islandora_events\Operator\IslandoraEventRecordRequeueHandler
+    arguments: ["@entity_type.manager", "@islandora_events.index_target_manager"]
+    tags:
+      - { name: sm_ledger.requeue_handler }
+
+  islandora_events.event_record_run_now_handler:
+    class: Drupal\islandora_events\Operator\IslandoraEventRecordRunNowHandler
+    arguments:
+      - "@islandora_events.derivative_runner"
+      - "@islandora_events.index_record_processor"
+      - "@logger.channel.islandora_events"
+    tags:
+      - { name: sm_ledger.run_now_handler }
+
+  islandora_events.derivative_execution.http:
+    class: Drupal\islandora_events\Service\DerivativeHttpExecutionStrategy
+    arguments: ["@http_client", "@sm_workers.circuit_breaker"]
+    tags:
+      - { name: sm_workers.execution_strategy }
+
+  islandora_events.derivative_execution.command:
+    class: Drupal\islandora_events\Service\DerivativeCommandExecutionStrategy
+    arguments:
+      - "@http_client"
+      - "@logger.channel.islandora_events"
+      - "@islandora_events.derivative_command_policy"
+      - "@sm_workers.command_token_registry"
+      - "@sm_workers.command_executor"
+      - "@sm_workers.command_builder"
+    tags:
+      - { name: sm_workers.execution_strategy }
+
+  islandora_events.command_token_provider:
+    class: Drupal\islandora_events\CommandToken\IslandoraDerivativeCommandTokenProvider
+    tags:
+      - { name: sm_workers.command_token_provider }
+
+  islandora_events.index_payload_builder:
+    class: Drupal\islandora_events\Index\IndexPayloadBuilder
+    arguments:
+      - !tagged_iterator { tag: islandora_events.index_payload_metadata }
+
+  islandora_events.index_target_manager:
+    class: Drupal\islandora_events\Index\IndexTargetManager
+    arguments:
+      - !tagged_iterator { tag: islandora_events.index_target }
+
+  islandora_events.index_event:
+    class: Drupal\islandora_events\Service\IndexEventService
+    arguments:
+      - "@islandora_events.index_target_manager"
+      - "@islandora_events.index_payload_builder"
+      - "@sm_ledger.dispatch"
+      - "@logger.channel.islandora_events"
+  Drupal\islandora_events\Service\IndexEventService: '@islandora_events.index_event'
+
+  islandora_events.worker_definitions:
+    class: Drupal\islandora_events\Worker\IslandoraWorkerDefinitions
+    tags:
+      - { name: sm_workers.definition_provider }
+
+  islandora_events.worker_operations:
+    class: Drupal\islandora_events\Worker\IslandoraWorkerOperations
+    arguments: ["@sm_workers.registry", "@sm_workers.command_builder"]
+    tags:
+      - { name: sm_workers.operation_provider }
+
+  islandora_events.commands:
+    class: Drupal\islandora_events\Commands\IslandoraEventsCommands
+    arguments: ["@islandora_events.derivative_runner", "@islandora_events.index_ledger_replay", "@sm_ledger.capacity_report"]
+    tags:
+      - { name: drush.command }
+
+  islandora_events.entity_hooks:
+    class: Drupal\islandora_events\Hook\EntityHooks
+    arguments: ["@islandora.utils", "@islandora.media_source_service", "@islandora_events.index_event", "@islandora_events.deferred_media_file_reaction_queue"]
+  Drupal\islandora_events\Hook\EntityHooks: '@islandora_events.entity_hooks'
+
+  islandora_events.derivative_handler:
+    class: Drupal\islandora_events\MessageHandler\IslandoraDerivativeHandler
+    arguments:
+      - "@islandora_events.derivative_runner"
+      - "@sm_ledger.projection"
+      - "@sm_ledger.execution_lock"
+      - "@logger.channel.islandora_events"
+    tags:
+      - { name: messenger.message_handler }
+
+  islandora_events.index_handler:
+    class: Drupal\islandora_events\MessageHandler\IndexEventHandler
+    arguments:
+      - "@islandora_events.index_record_processor"
+      - "@sm_ledger.projection"
+      - "@sm_ledger.execution_lock"
+      - "@logger.channel.islandora_events"
+    tags:
+      - { name: messenger.message_handler }

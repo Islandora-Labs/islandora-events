@@ -1,0 +1,16 @@
+islandora_events_blazegraph.settings:
+  type: config_object
+  label: 'Islandora Events Blazegraph settings'
+  mapping:
+    enabled:
+      type: boolean
+      label: 'Enabled'
+    endpoint:
+      type: string
+      label: 'Endpoint URL'
+    timeout:
+      type: integer
+      label: 'Timeout'
+    named_graph:
+      type: string
+      label: 'Named graph'

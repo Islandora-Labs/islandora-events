@@ -1,0 +1,17 @@
+routing:
+  Drupal\islandora_events\Message\IslandoraDerivativeMessage:
+    senders:
+      - islandora_derivatives
+    failure_transport: failed
+  Drupal\islandora_events\Message\FedoraIndexEventMessage:
+    senders:
+      - islandora_index_fedora
+    failure_transport: failed
+  Drupal\islandora_events\Message\BlazegraphIndexEventMessage:
+    senders:
+      - islandora_index_blazegraph
+    failure_transport: failed
+  Drupal\islandora_events\Message\CustomIndexEventMessage:
+    senders:
+      - islandora_index_custom
+    failure_transport: failed

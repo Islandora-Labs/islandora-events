@@ -1,0 +1,38 @@
+services:
+  logger.channel.islandora_events_backfill:
+    parent: logger.channel_base
+    arguments: ["islandora_events_backfill"]
+
+  plugin.manager.derivative_scanner:
+    class: Drupal\islandora_events_backfill\Plugin\DerivativeScannerManager
+    arguments: ["@container.namespaces", "@cache.discovery", "@module_handler"]
+
+  islandora_events_backfill.derivative_scanner:
+    class: Drupal\islandora_events_backfill\Service\DerivativeScannerService
+    arguments:
+      - "@state"
+      - "@logger.channel.islandora_events_backfill"
+      - "@plugin.manager.derivative_scanner"
+      - "@datetime.time"
+      - "@sm_ledger.projection"
+      - "@entity_type.manager"
+      - "@islandora_events.derivative_queue"
+      - "@lock"
+  Drupal\islandora_events_backfill\Service\DerivativeScannerService: '@islandora_events_backfill.derivative_scanner'
+
+  islandora_events_backfill.scan_handler:
+    class: Drupal\islandora_events_backfill\MessageHandler\BackfillScanHandler
+    arguments: ["@islandora_events_backfill.derivative_scanner", "@logger.channel.islandora_events_backfill"]
+    tags:
+      - { name: messenger.message_handler }
+
+  islandora_events_backfill.worker_definitions:
+    class: Drupal\islandora_events_backfill\Worker\BackfillWorkerDefinitions
+    tags:
+      - { name: sm_workers.definition_provider }
+
+  islandora_events_backfill.commands:
+    class: Drupal\islandora_events_backfill\Commands\IslandoraEventsBackfillCommands
+    arguments: ["@islandora_events_backfill.derivative_scanner"]
+    tags:
+      - { name: drush.command }

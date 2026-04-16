@@ -1,0 +1,4 @@
+view islandora events metrics:
+  title: 'View Islandora Events metrics'
+  description: 'Access the Prometheus-style metrics endpoint for Islandora Events.'
+  restrict access: true

@@ -1,0 +1,22 @@
+<?php
+
+/**
+ * @file
+ * Hooks for the Islandora Events OTEL integration module.
+ */
+
+declare(strict_types=1);
+
+use Drupal\Core\Entity\EntityInterface;
+
+/**
+ * Adds OTEL-style trace context to newly created ledger records.
+ */
+function islandora_events_otel_entity_presave(EntityInterface $entity): void {
+  if ($entity->getEntityTypeId() !== 'event_record' || !$entity->isNew()) {
+    return;
+  }
+
+  \Drupal::service('islandora_events_otel.ledger_telemetry')
+    ->initializeRecordTelemetry($entity);
+}

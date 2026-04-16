@@ -1,0 +1,16 @@
+services:
+  islandora_events_metrics.store:
+    class: Drupal\islandora_events_metrics\Service\MetricsStore
+    arguments: ["@state"]
+  Drupal\islandora_events_metrics\Service\MetricsStore: '@islandora_events_metrics.store'
+
+  islandora_events_metrics.collector:
+    class: Drupal\islandora_events_metrics\Service\MetricsCollector
+    arguments: ["@database", "@state", "@islandora_events_metrics.store", "@cache.default", "@entity_type.manager", "%sm.transports%"]
+  Drupal\islandora_events_metrics\Service\MetricsCollector: '@islandora_events_metrics.collector'
+
+  islandora_events_metrics.worker_subscriber:
+    class: Drupal\islandora_events_metrics\EventSubscriber\WorkerMetricsSubscriber
+    arguments: ["@islandora_events_metrics.store"]
+    tags:
+      - { name: event_subscriber }

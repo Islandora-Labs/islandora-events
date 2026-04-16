@@ -1,0 +1,17 @@
+allowedMimeTypes:
+  - "application/pdf"
+  - "image/*"
+cmdByMimeType:
+  "application/pdf":
+    cmd: pdftotext
+    args:
+      - "%args"
+      - "-"
+      - "-"
+    allowInsecureArgs: ${SCYLLARIDAE_ALLOW_INSECURE_ARGS}
+  default:
+    cmd: "${SCYLLARIDAE_BASE_DIR}/cmd.sh"
+    args:
+      - "%source-mime-ext"
+      - "%args"
+    allowInsecureArgs: ${SCYLLARIDAE_ALLOW_INSECURE_ARGS}

@@ -1,0 +1,11 @@
+allowedMimeTypes:
+  - "application/pdf"
+  - "image/*"
+cmdByMimeType:
+  default:
+    cmd: "${SCYLLARIDAE_BASE_DIR}/cmd.sh"
+    args:
+      - "%source-mime-ext"
+      - "%destination-mime-ext"
+      - "%args"
+    allowInsecureArgs: ${SCYLLARIDAE_ALLOW_INSECURE_ARGS}

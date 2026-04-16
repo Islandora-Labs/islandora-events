@@ -1,0 +1,5 @@
+_core:
+  default_config_hash: a7A_LSGdnRhYdYmB3ERMYdVfrqnCvfgUqvDNuS0dQaA
+enabled: true
+endpoint: 'http://fcrepo:8080/fcrepo/rest'
+timeout: 30

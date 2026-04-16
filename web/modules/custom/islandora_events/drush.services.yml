@@ -1,0 +1,6 @@
+services:
+  islandora_events.commands:
+    class: Drupal\islandora_events\Commands\IslandoraEventsCommands
+    arguments: ['@islandora_events.derivative_runner', '@islandora_events.index_ledger_replay', '@sm_ledger.capacity_report']
+    tags:
+      - { name: drush.command }

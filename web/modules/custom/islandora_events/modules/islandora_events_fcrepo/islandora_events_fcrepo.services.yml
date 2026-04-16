@@ -1,0 +1,42 @@
+services:
+  logger.channel.islandora_events_fcrepo:
+    parent: logger.channel_base
+    arguments: ["islandora_events_fcrepo"]
+
+  islandora_events_fcrepo.indexer:
+    class: Drupal\islandora_events_fcrepo\Service\FcrepoIndexerService
+    arguments:
+      - "@http_client"
+      - "@logger.channel.islandora_events_fcrepo"
+  Drupal\islandora_events_fcrepo\Service\FcrepoIndexerService: "@islandora_events_fcrepo.indexer"
+
+  islandora_events_fcrepo.index_target:
+    class: Drupal\islandora_events_fcrepo\Index\Target\FcrepoIndexTarget
+    arguments:
+      - "@config.factory"
+      - "@jwt.authentication.jwt"
+      - "@sm_workers.circuit_breaker"
+      - "@islandora_events_fcrepo.indexer"
+      - "@islandora.media_source_service"
+      - "@file_url_generator"
+      - "@current_user"
+      - "@logger.channel.islandora_events_fcrepo"
+    tags:
+      - { name: islandora_events.index_target }
+
+  islandora_events_fcrepo.payload_metadata:
+    class: Drupal\islandora_events_fcrepo\Index\FcrepoIndexPayloadMetadataProvider
+    arguments:
+      - "@islandora.media_source_service"
+      - "@file_url_generator"
+    tags:
+      - { name: islandora_events.index_payload_metadata }
+
+  islandora_events_fcrepo.commands:
+    class: Drupal\islandora_events_fcrepo\Commands\IslandoraEventsFcrepoCommands
+    arguments:
+      - "@entity_type.manager"
+      - "@islandora_events_fcrepo.index_target"
+      - "@logger.channel.islandora_events_fcrepo"
+    tags:
+      - { name: drush.command }

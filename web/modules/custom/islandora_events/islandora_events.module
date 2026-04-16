@@ -1,0 +1,228 @@
+<?php
+
+/**
+ * @file
+ * Primary module hooks for Islandora Events module.
+ *
+ * Procedural hook entry points delegate to service classes so the module stays
+ * compatible with both Drupal 10 and 11.
+ */
+
+use Drupal\taxonomy\TermInterface;
+use Drupal\file\FileInterface;
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Url;
+use Drupal\sm_ledger\Entity\EventRecordInterface;
+
+/**
+ * Implements hook_node_insert().
+ */
+function islandora_events_node_insert(EntityInterface $node): void {
+  \Drupal::service('islandora_events.entity_hooks')->nodeInsert($node);
+}
+
+/**
+ * Implements hook_node_update().
+ */
+function islandora_events_node_update(EntityInterface $node): void {
+  \Drupal::service('islandora_events.entity_hooks')->nodeUpdate($node);
+}
+
+/**
+ * Implements hook_node_delete().
+ */
+function islandora_events_node_delete(EntityInterface $node): void {
+  \Drupal::service('islandora_events.entity_hooks')->nodeDelete($node);
+}
+
+/**
+ * Implements hook_media_insert().
+ */
+function islandora_events_media_insert(EntityInterface $media): void {
+  \Drupal::service('islandora_events.entity_hooks')->mediaInsert($media);
+}
+
+/**
+ * Implements hook_media_update().
+ */
+function islandora_events_media_update(EntityInterface $media): void {
+  \Drupal::service('islandora_events.entity_hooks')->mediaUpdate($media);
+}
+
+/**
+ * Implements hook_media_delete().
+ */
+function islandora_events_media_delete(EntityInterface $media): void {
+  \Drupal::service('islandora_events.entity_hooks')->mediaDelete($media);
+}
+
+/**
+ * Implements hook_file_insert().
+ */
+function islandora_events_file_insert(FileInterface $file): void {
+  \Drupal::service('islandora_events.entity_hooks')->fileInsert($file);
+}
+
+/**
+ * Implements hook_file_update().
+ */
+function islandora_events_file_update(FileInterface $file): void {
+  \Drupal::service('islandora_events.entity_hooks')->fileUpdate($file);
+}
+
+/**
+ * Implements hook_file_delete().
+ */
+function islandora_events_file_delete(FileInterface $file): void {
+  \Drupal::service('islandora_events.entity_hooks')->fileDelete($file);
+}
+
+/**
+ * Implements hook_taxonomy_term_insert().
+ */
+function islandora_events_taxonomy_term_insert(TermInterface $term): void {
+  \Drupal::service('islandora_events.entity_hooks')->termInsert($term);
+}
+
+/**
+ * Implements hook_taxonomy_term_update().
+ */
+function islandora_events_taxonomy_term_update(TermInterface $term): void {
+  \Drupal::service('islandora_events.entity_hooks')->termUpdate($term);
+}
+
+/**
+ * Implements hook_taxonomy_term_delete().
+ */
+function islandora_events_taxonomy_term_delete(TermInterface $term): void {
+  \Drupal::service('islandora_events.entity_hooks')->termDelete($term);
+}
+
+/**
+ * Implements hook_entity_view_alter().
+ */
+function islandora_events_entity_view_alter(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display) {
+  if ($entity->getEntityTypeId() !== 'event_record') {
+    return;
+  }
+
+  if (!$entity->access('view')) {
+    return;
+  }
+
+  $list_builder = \Drupal::entityTypeManager()->getListBuilder('event_record');
+  $operations = $list_builder->getOperations($entity);
+  if (empty($operations)) {
+    return;
+  }
+
+  $build['islandora_events_actions'] = [
+    '#type' => 'operations',
+    '#links' => $operations,
+    '#weight' => -100,
+  ];
+
+  if (isset($build['status'])) {
+    $build['status']['#weight'] = 1;
+  }
+  if (isset($build['payload_json'])) {
+    $build['payload_json']['#weight'] = 3;
+  }
+  if (isset($build['transport_metadata'])) {
+    $build['transport_metadata']['#weight'] = 4;
+  }
+
+  $source_entity_type = (string) $entity->get('source_entity_type')->value;
+  $source_entity_id = (int) $entity->get('source_entity_id')->value;
+  $allowed_source_entity_types = ['node', 'media', 'file', 'taxonomy_term'];
+
+  $source_items = [];
+  if ($source_entity_type !== '' && $source_entity_id > 0 && in_array($source_entity_type, $allowed_source_entity_types, TRUE)) {
+    $source_storage = \Drupal::entityTypeManager()->getStorage($source_entity_type);
+    $source_entity = $source_storage->load($source_entity_id);
+    if ($source_entity) {
+      $source_items[] = $source_entity->toLink();
+    }
+    else {
+      $source_items[] = ['#plain_text' => sprintf('%s:%d', $source_entity_type, $source_entity_id)];
+    }
+  }
+  elseif ($source_entity_type !== '' && $source_entity_id > 0) {
+    $source_items[] = ['#plain_text' => sprintf('%s:%d', $source_entity_type, $source_entity_id)];
+  }
+
+  if ($source_items !== []) {
+    $build['islandora_events_source'] = [
+      '#type' => 'container',
+      '#weight' => 0,
+      'label' => [
+        '#type' => 'html_tag',
+        '#tag' => 'strong',
+        '#value' => (string) t('Source entity'),
+      ],
+      'value' => [
+        '#theme' => 'item_list',
+        '#items' => $source_items,
+        '#list_type' => 'ul',
+      ],
+    ];
+  }
+
+  $initiating_user_id = (int) $entity->get('initiating_user_id')->target_id;
+  if ($initiating_user_id > 0) {
+    $user = \Drupal::entityTypeManager()->getStorage('user')->load($initiating_user_id);
+    $build['islandora_events_initiating_user'] = [
+      '#type' => 'container',
+      '#weight' => 2,
+      'label' => [
+        '#type' => 'html_tag',
+        '#tag' => 'strong',
+        '#value' => (string) t('Initiating user'),
+      ],
+    ];
+    $build['islandora_events_initiating_user']['value'] = $user
+      ? $user->toLink()->toRenderable()
+      : ['#plain_text' => (string) $initiating_user_id];
+  }
+
+  foreach (['source_entity_type', 'source_entity_id', 'source_entity_uuid', 'initiating_user_id'] as $field_name) {
+    if (isset($build[$field_name])) {
+      $build[$field_name]['#access'] = FALSE;
+    }
+  }
+}
+
+/**
+ * Implements hook_entity_operation().
+ */
+function islandora_events_entity_operation(EntityInterface $entity): array {
+  if (!$entity instanceof EventRecordInterface) {
+    return [];
+  }
+
+  $operations = [];
+  $ledger_operator = \Drupal::service('sm_ledger.operator');
+
+  if ($ledger_operator->canRunNow($entity)) {
+    $operations['run_now'] = [
+      'title' => t('Run now'),
+      'url' => Url::fromRoute('islandora_events.event_record_run_now', [
+        'event_record' => $entity->id(),
+      ]),
+      'weight' => 20,
+    ];
+  }
+
+  if ($ledger_operator->canRequeue($entity)) {
+    $operations['requeue'] = [
+      'title' => t('Requeue'),
+      'url' => Url::fromRoute('islandora_events.event_record_requeue', [
+        'event_record' => $entity->id(),
+      ]),
+      'weight' => 30,
+    ];
+  }
+
+  return $operations;
+}

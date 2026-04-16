@@ -1,0 +1,6 @@
+services:
+  islandora_events_backfill.commands:
+    class: Drupal\islandora_events_backfill\Commands\IslandoraEventsBackfillCommands
+    arguments: ['@islandora_events_backfill.derivative_scanner']
+    tags:
+      - { name: drush.command }

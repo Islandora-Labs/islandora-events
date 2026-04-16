@@ -1,0 +1,316 @@
+From d3b039c09f3945fb579ff359833090c54e14fa12 Mon Sep 17 00:00:00 2001
+From: Joe Corall <jjc223@lehigh.edu>
+Date: Tue, 31 Mar 2026 09:14:58 -0400
+Subject: [PATCH] Leverage islandora_events if it exists
+
+---
+ islandora.module                              | 62 +++++++++++++++++++
+ .../GenerateAudioDerivativeTest.php           |  1 +
+ .../GenerateImageDerivativeTest.php           |  1 +
+ .../GenerateVideoDerivativeTest.php           |  1 +
+ src/EventGenerator/EmitEvent.php              | 27 ++++++++
+ src/EventGenerator/EventGenerator.php         |  1 +
+ .../Action/AbstractGenerateDerivative.php     |  1 +
+ .../AbstractGenerateDerivativeMediaFile.php   |  2 +
+ .../Functional/GenerateDerivativeTestBase.php |  5 ++
+ 9 files changed, 101 insertions(+)
+
+diff --git a/islandora.module b/islandora.module
+index 5bf9743a1..0c732c5c8 100644
+--- a/islandora.module
++++ b/islandora.module
+@@ -47,6 +47,10 @@ function islandora_help($route_name, RouteMatchInterface $route_match) {
+  * Implements hook_node_insert().
+  */
+ function islandora_node_insert(NodeInterface $node) {
++  if (islandora_uses_external_event_orchestrator()) {
++    return;
++  }
++
+   $utils = \Drupal::service('islandora.utils');
+ 
+   // Execute index reactions.
+@@ -57,8 +61,13 @@ function islandora_node_insert(NodeInterface $node) {
+  * Implements hook_node_update().
+  */
+ function islandora_node_update(NodeInterface $node) {
++  if (islandora_uses_external_event_orchestrator()) {
++    return;
++  }
+ 
+   $utils = \Drupal::service('islandora.utils');
++  // Keep the legacy property access while Islandora still supports Drupal
++  // 10.3. This can move to getOriginal() when 10.x support is dropped.
+   if (!$utils->haveFieldsChanged($node, $node->original)) {
+     return;
+   }
+@@ -71,6 +80,10 @@ function islandora_node_update(NodeInterface $node) {
+  * Implements hook_node_delete().
+  */
+ function islandora_node_delete(NodeInterface $node) {
++  if (islandora_uses_external_event_orchestrator()) {
++    return;
++  }
++
+   $utils = \Drupal::service('islandora.utils');
+ 
+   // Execute delete reactions.
+@@ -81,6 +94,10 @@ function islandora_node_delete(NodeInterface $node) {
+  * Implements hook_media_insert().
+  */
+ function islandora_media_insert(MediaInterface $media) {
++  if (islandora_uses_external_event_orchestrator()) {
++    return;
++  }
++
+   $utils = \Drupal::service('islandora.utils');
+   // Execute index reactions.
+   $utils->executeMediaReactions('\Drupal\islandora\Plugin\ContextReaction\IndexReaction', $media);
+@@ -103,10 +120,16 @@ function islandora_media_insert(MediaInterface $media) {
+  * Implements hook_media_update().
+  */
+ function islandora_media_update(MediaInterface $media) {
++  if (islandora_uses_external_event_orchestrator()) {
++    return;
++  }
++
+   $media_source_service = \Drupal::service('islandora.media_source_service');
+ 
+   // Exit early if nothing's changed.
+   $utils = \Drupal::service('islandora.utils');
++  // Keep the legacy property access while Islandora still supports Drupal
++  // 10.3. This can move to getOriginal() when 10.x support is dropped.
+   if (!$utils->haveFieldsChanged($media, $media->original)) {
+     return;
+   }
+@@ -140,6 +163,10 @@ function islandora_media_update(MediaInterface $media) {
+  * Implements hook_media_delete().
+  */
+ function islandora_media_delete(MediaInterface $media) {
++  if (islandora_uses_external_event_orchestrator()) {
++    return;
++  }
++
+   $utils = \Drupal::service('islandora.utils');
+ 
+   // Execute delete reactions.
+@@ -160,15 +187,30 @@ function islandora_media_delete(MediaInterface $media) {
+  * @see https://www.drupal.org/project/drupal/issues/2551893
+  */
+ function _islandora_fire_media_file_derivative_reaction(MediaInterface $media) {
++  if (islandora_uses_external_event_orchestrator()) {
++    return;
++  }
++
+   $utils = \Drupal::service('islandora.utils');
+   // Execute derivative file reactions.
+   $utils->executeMediaReactions('\Drupal\islandora\Plugin\ContextReaction\DerivativeFileReaction', $media);
+ }
+ 
++/**
++ * Indicates whether Islandora should defer event orchestration externally.
++ */
++function islandora_uses_external_event_orchestrator(): bool {
++  return \Drupal::moduleHandler()->moduleExists('islandora_events');
++}
++
+ /**
+  * Implements hook_file_insert().
+  */
+ function islandora_file_insert(FileInterface $file) {
++  if (islandora_uses_external_event_orchestrator()) {
++    return;
++  }
++
+   $utils = \Drupal::service('islandora.utils');
+ 
+   // Execute index reactions.
+@@ -179,6 +221,10 @@ function islandora_file_insert(FileInterface $file) {
+  * Implements hook_file_update().
+  */
+ function islandora_file_update(FileInterface $file) {
++  if (islandora_uses_external_event_orchestrator()) {
++    return;
++  }
++
+   // Exit early if unchanged.
+   if ($file->hasField('sha1') && $file->original->hasField('sha1')
+     && $file->sha1->getString() == $file->original->sha1->getString()) {
+@@ -207,6 +253,10 @@ function islandora_file_update(FileInterface $file) {
+  * Implements hook_file_delete().
+  */
+ function islandora_file_delete(FileInterface $file) {
++  if (islandora_uses_external_event_orchestrator()) {
++    return;
++  }
++
+   $utils = \Drupal::service('islandora.utils');
+ 
+   // Execute delete reactions.
+@@ -217,6 +267,10 @@ function islandora_file_delete(FileInterface $file) {
+  * Implements hook_taxonomy_term_insert().
+  */
+ function islandora_taxonomy_term_insert(TermInterface $term) {
++  if (islandora_uses_external_event_orchestrator()) {
++    return;
++  }
++
+   $utils = \Drupal::service('islandora.utils');
+ 
+   // Execute index reactions.
+@@ -227,6 +281,10 @@ function islandora_taxonomy_term_insert(TermInterface $term) {
+  * Implements hook_taxonomy_term_update().
+  */
+ function islandora_taxonomy_term_update(TermInterface $term) {
++  if (islandora_uses_external_event_orchestrator()) {
++    return;
++  }
++
+   $utils = \Drupal::service('islandora.utils');
+ 
+   // Execute index reactions.
+@@ -237,6 +295,10 @@ function islandora_taxonomy_term_update(TermInterface $term) {
+  * Implements hook_taxonomy_term_delete().
+  */
+ function islandora_taxonomy_term_delete(TermInterface $term) {
++  if (islandora_uses_external_event_orchestrator()) {
++    return;
++  }
++
+   $utils = \Drupal::service('islandora.utils');
+ 
+   // Execute delete reactions.
+diff --git a/modules/islandora_audio/tests/src/Functional/GenerateAudioDerivativeTest.php b/modules/islandora_audio/tests/src/Functional/GenerateAudioDerivativeTest.php
+index 094a7856a..957ef5bcf 100644
+--- a/modules/islandora_audio/tests/src/Functional/GenerateAudioDerivativeTest.php
++++ b/modules/islandora_audio/tests/src/Functional/GenerateAudioDerivativeTest.php
+@@ -73,6 +73,7 @@ public function testGenerateAudioDerivativeFromScratch() {
+ 
+     $expected = [
+       'source_uri' => 'test_file.txt',
++      'source_mimetype' => 'text/plain',
+       'destination_uri' => "node/1/media/{$this->testMediaType->id()}/3",
+       'file_upload_uri' => 'public://derp.mov',
+       'mimetype' => 'audio/mpeg',
+diff --git a/modules/islandora_image/tests/src/Functional/GenerateImageDerivativeTest.php b/modules/islandora_image/tests/src/Functional/GenerateImageDerivativeTest.php
+index 17c1beae0..43f2558f8 100644
+--- a/modules/islandora_image/tests/src/Functional/GenerateImageDerivativeTest.php
++++ b/modules/islandora_image/tests/src/Functional/GenerateImageDerivativeTest.php
+@@ -75,6 +75,7 @@ public function testGenerateImageDerivativeFromScratch() {
+ 
+     $expected = [
+       'source_uri' => 'test_file.txt',
++      'source_mimetype' => 'text/plain',
+       'destination_uri' => "node/1/media/{$this->testMediaType->id()}/3",
+       'file_upload_uri' => 'public://derp.jpeg',
+       'mimetype' => 'image/jpeg',
+diff --git a/modules/islandora_video/tests/src/Functional/GenerateVideoDerivativeTest.php b/modules/islandora_video/tests/src/Functional/GenerateVideoDerivativeTest.php
+index 2f79e18e9..7fe7ba2ca 100644
+--- a/modules/islandora_video/tests/src/Functional/GenerateVideoDerivativeTest.php
++++ b/modules/islandora_video/tests/src/Functional/GenerateVideoDerivativeTest.php
+@@ -70,6 +70,7 @@ public function testGenerateVideoDerivativeFromScratch() {
+ 
+     $expected = [
+       'source_uri' => 'test_file.txt',
++      'source_mimetype' => 'text/plain',
+       'destination_uri' => "node/1/media/{$this->testMediaType->id()}/3",
+       'file_upload_uri' => 'public://derp.mov',
+       'mimetype' => 'video/mp4',
+diff --git a/src/EventGenerator/EmitEvent.php b/src/EventGenerator/EmitEvent.php
+index bd90dfdf6..f1759234a 100644
+--- a/src/EventGenerator/EmitEvent.php
++++ b/src/EventGenerator/EmitEvent.php
+@@ -168,6 +168,33 @@ public function execute($entity = NULL) {
+         $this->eventGenerator->generateEvent($entity, $user, $data),
+         $event->getHeaders()->all()
+       );
++
++      if (
++        \Drupal::moduleHandler()->moduleExists('islandora_events')
++        && \Drupal::hasService('islandora_events.legacy_derivative_queue')
++        && \Drupal::hasService('islandora_events.index_event')
++      ) {
++        $configured_event = (string) ($this->configuration['event'] ?? '');
++        if ($configured_event === 'Generate Derivative') {
++          \Drupal::service('islandora_events.legacy_derivative_queue')->enqueue(
++            $entity,
++            $message->getBody(),
++            $message->getHeaders(),
++            $this->getConfiguration(),
++            $this->getPluginId(),
++          );
++          return;
++        }
++
++        $operation = strtolower($configured_event);
++        if (
++          in_array($operation, ['insert', 'update', 'delete'], TRUE)
++          && in_array($entity->getEntityTypeId(), ['node', 'media'], TRUE)
++        ) {
++          \Drupal::service('islandora_events.index_event')->queueEntityEvent($entity, $operation);
++          return;
++        }
++      }
+     }
+     catch (IslandoraDerivativeException $e) {
+       $this->logger->info($e->getMessage());
+diff --git a/src/EventGenerator/EventGenerator.php b/src/EventGenerator/EventGenerator.php
+index ab172225d..0525c74ef 100644
+--- a/src/EventGenerator/EventGenerator.php
++++ b/src/EventGenerator/EventGenerator.php
+@@ -151,6 +151,7 @@ public function generateEvent(EntityInterface $entity, UserInterface $user, arra
+       "file_upload_uri",
+       "fedora_uri",
+       "source_uri",
++      "source_mimetype",
+       "destination_uri",
+       "args",
+       "mimetype",
+diff --git a/src/Plugin/Action/AbstractGenerateDerivative.php b/src/Plugin/Action/AbstractGenerateDerivative.php
+index b44db477b..60c246f51 100644
+--- a/src/Plugin/Action/AbstractGenerateDerivative.php
++++ b/src/Plugin/Action/AbstractGenerateDerivative.php
+@@ -53,6 +53,7 @@ protected function generateData(EntityInterface $entity) {
+     }
+ 
+     $data['source_uri'] = $this->utils->getDownloadUrl($source_file);
++    $data['source_mimetype'] = $source_file->getMimeType();
+ 
+     // Find the term for the derivative and use it to set the destination url
+     // in the data array.
+diff --git a/src/Plugin/Action/AbstractGenerateDerivativeMediaFile.php b/src/Plugin/Action/AbstractGenerateDerivativeMediaFile.php
+index f0974b0c0..9aa7e5cd9 100644
+--- a/src/Plugin/Action/AbstractGenerateDerivativeMediaFile.php
++++ b/src/Plugin/Action/AbstractGenerateDerivativeMediaFile.php
+@@ -50,6 +50,7 @@ protected function generateData(EntityInterface $entity) {
+       throw new \RuntimeException("Could not locate source file for media {$entity->id()}", 500);
+     }
+     $data['source_uri'] = $this->utils->getDownloadUrl($source_file);
++    $data['source_mimetype'] = $source_file->getMimeType();
+ 
+     $route_params = [
+       'media' => $entity->id(),
+@@ -74,6 +75,7 @@ protected function generateData(EntityInterface $entity) {
+       'event',
+       'args',
+       'source_uri',
++      'source_mimetype',
+       'destination_uri',
+       'file_upload_uri',
+       'mimetype',
+diff --git a/tests/src/Functional/GenerateDerivativeTestBase.php b/tests/src/Functional/GenerateDerivativeTestBase.php
+index c5ec9701c..d8d0fa73c 100644
+--- a/tests/src/Functional/GenerateDerivativeTestBase.php
++++ b/tests/src/Functional/GenerateDerivativeTestBase.php
+@@ -103,6 +103,11 @@ protected function checkMessage(array $expected) {
+           $content['file_upload_uri'],
+           "Expected file upload uri should contain the scheme and path of the derivative"
+         );
++        $this->assertEquals(
++          $expected['source_mimetype'],
++          $content['source_mimetype'],
++          "Expected source mimetype '{$expected['source_mimetype']}', received {$content['source_mimetype']}"
++        );
+ 
+         $this->assertEquals($expected['mimetype'], $content['mimetype'], "Expected mimetype '{$expected['mimetype']}', received {$content['mimetype']}");
+ 

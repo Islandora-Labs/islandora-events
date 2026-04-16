@@ -1,0 +1,12 @@
+services:
+  drupal:
+    volumes:
+      - ./assets:/var/www/drupal/assets:z,rw,${CONSISTENCY}
+      - ./composer.json:/var/www/drupal/composer.json:z,rw,${CONSISTENCY}
+      - ./composer.lock:/var/www/drupal/composer.lock:z,rw,${CONSISTENCY}
+      - ./web/modules/custom:/var/www/drupal/web/modules/custom:z,rw,${CONSISTENCY}
+      - ./web/themes/custom:/var/www/drupal/web/themes/custom:z,rw,${CONSISTENCY}
+      - ./recipes:/var/www/drupal/recipes:z,rw,${CONSISTENCY}
+  mariadb:
+    ports:
+      - "3306:3306"

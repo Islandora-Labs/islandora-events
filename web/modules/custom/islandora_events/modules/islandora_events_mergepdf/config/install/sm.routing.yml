@@ -1,0 +1,9 @@
+routing:
+  'Drupal\\islandora_events_mergepdf\\Message\\MergePdfMessage':
+    senders:
+      - 'islandora_mergepdf'
+    failure_transport: 'failed'
+  'Drupal\\islandora_events_mergepdf\\Message\\SweepPendingMergePdfMessage':
+    senders:
+      - 'islandora_mergepdf'
+    failure_transport: 'failed'

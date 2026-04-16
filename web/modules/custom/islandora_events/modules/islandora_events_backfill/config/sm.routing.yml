@@ -1,0 +1,9 @@
+routing:
+  Drupal\islandora_events_backfill\Message\BackfillScanMessage:
+    senders:
+      - islandora_backfill
+    failure_transport: failed
+  Drupal\islandora_events_backfill\Message\IslandoraBackfillDerivativeMessage:
+    senders:
+      - islandora_backfill
+    failure_transport: failed

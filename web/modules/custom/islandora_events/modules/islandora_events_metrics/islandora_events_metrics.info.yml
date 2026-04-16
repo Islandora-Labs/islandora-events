@@ -1,0 +1,9 @@
+name: "Islandora Events Metrics"
+type: module
+description: "Optional Prometheus-style metrics surface for Islandora Events and SM Ledger."
+package: Islandora
+core_version_requirement: ^10 || ^11
+dependencies:
+  - drupal:islandora_events
+  - drupal:sm_ledger
+  - drupal:sm_workers
