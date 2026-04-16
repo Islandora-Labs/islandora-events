@@ -30,6 +30,9 @@ Notable changes to this copy of ISLE Site Template:
 
 ## Next Steps
 
+
+- @joecorall - review `islandora_events`, `sm_ledger`, and `sm_workers` and ensure the code is ready for community review
+- @joecorall - ensure https://github.com/Islandora/documentation/pull/2403 is up to date
 - Community Feedback
 - Testing
 - [Stress Testing](#benchmarking-islandora-events)
