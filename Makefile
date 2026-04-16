@@ -1,7 +1,7 @@
 .PHONY: help
 .PHONY: create-starter-site-pr overwrite-starter-site
 .PHONY: build pull down down-% logs-% up up-%
-.PHONY: clean demo-objects init ping status
+.PHONY: clean demo-objects drush init ping status
 .PHONY: traefik-http traefik-https-letsencrypt traefik-https-mkcert
 .PHONY: sequelace
 .SILENT:
@@ -11,6 +11,11 @@
 
 DEFAULT_HTTP=80
 DEFAULT_HTTPS=443
+
+ifeq (drush,$(firstword $(MAKECMDGOALS)))
+DRUSH_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+$(foreach arg,$(DRUSH_ARGS),$(eval $(arg):;@:))
+endif
 
 help: ## Show this help message
 	echo 'Usage: make [target]'
@@ -59,6 +64,9 @@ clean:  ## Delete all stateful data.
 
 ping:  ## Ensure site is available.
 	./scripts/ping.sh
+
+drush: ## Run drush in the drupal container; for drush flags use: make -- drush status -y
+	docker compose exec -it drupal drush $(DRUSH_ARGS)
 
 demo-objects: up ## Add demo objects from https://github.com/Islandora-Devops/islandora_demo_objects
 	./scripts/demo-objects.sh
